@@ -4,28 +4,33 @@
 #include <string.h>
 #include <time.h>
 
-#define NUM_SPRITES 7
+#include "scene/scene.h"
 
 #define clear() printf("\033[H\033[J")
 #define gotoxy(x,y) printf("\033[%d;%dH", (y), (x))
 
-typedef struct {
-    char* sprites[NUM_SPRITES];
-} scene_t;
 
 void read_scenes_from_file(const char *filename, scene_t* scene);
 void draw_sprites(void *args);
 
 int main(int argc, char *argv[])
 {
-    scene_t scene;
-    for (int i = 0; i < NUM_SPRITES; i++) {
-        scene.sprites[i] = malloc(500);
+    size_t num_sprites = 7;
+    size_t sprite_length = 500;
+    char *filename = "/usr/share/terminal-saver/sprites.dat";
+    if (argc == 4) {
+        filename = argv[1];
+        num_sprites = atoi(argv[2]);
+        sprite_length = atoi(argv[3]);
+    } else if (argc != 1) {
+        printf("ERROR! Either start the program without arguments, or\nterminal-saver <sprite-file> <number_of_sprites> <sprite_length>");
     }
-    read_scenes_from_file("/usr/share/terminal-saver/sprites.dat", &scene);
+    
+    scene_t* scene = scene_create(num_sprites, sprite_length);
+    read_scenes_from_file(filename, scene);
 
     pthread_t thread_id;
-    if (pthread_create(&thread_id, NULL, (void *)draw_sprites, &scene) != 0)
+    if (pthread_create(&thread_id, NULL, (void *)draw_sprites, scene) != 0)
     {
         fprintf(stderr, "Error creating thread\n");
         return EXIT_FAILURE;
@@ -35,9 +40,7 @@ int main(int argc, char *argv[])
 
     pthread_join(thread_id, NULL);
 
-    for (int i = 0; i < NUM_SPRITES; i++) {
-        free(scene.sprites[i]);
-    }
+    scene_delete(scene);
     return EXIT_SUCCESS;
 }
 
@@ -75,7 +78,7 @@ void draw_sprites(void *args)
     system("clear");
     while (1)
     {
-        if (sprite_num >= NUM_SPRITES)
+        if (sprite_num >= scene->sprite_num)
         {
             sprite_num = 0;
         }
