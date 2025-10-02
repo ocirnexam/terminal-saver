@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <pthread.h>
+#include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <time.h>
 
 #include "scene/scene.h"
@@ -11,10 +13,15 @@
 
 
 void read_scenes_from_file(const char *filename, scene_t* scene);
+/* thread functions */
+void process_input(void *args);
 void draw_sprites(void *args);
 
 int main(int argc, char *argv[])
 {
+    int exit_flag = 0;
+    pthread_t drawing_thread_id, input_thread_id;
+    
     size_t num_sprites = 7;
     size_t sprite_length = 500;
     char *filename = "/usr/share/terminal-saver/sprites.dat";
@@ -29,16 +36,22 @@ int main(int argc, char *argv[])
     scene_t* scene = scene_create(num_sprites, sprite_length);
     read_scenes_from_file(filename, scene);
 
-    pthread_t thread_id;
-    if (pthread_create(&thread_id, NULL, (void *)draw_sprites, scene) != 0)
+    if (pthread_create(&drawing_thread_id, NULL, (void *)draw_sprites, scene) != 0)
     {
         fprintf(stderr, "Error creating thread\n");
         return EXIT_FAILURE;
     }
+    if (pthread_create(&input_thread_id, NULL, (void *)process_input, &exit_flag) != 0)
+    {
+        fprintf(stderr, "Error creating input thread\n");
+        return EXIT_FAILURE;
+    }
 
-    // Main thread work can be done here
-
-    pthread_join(thread_id, NULL);
+    // wait for exit
+    while (!exit_flag) {
+        sleep(1);
+    }
+    pthread_kill(drawing_thread_id, 15); //sig_term
 
     scene_delete(scene);
     return EXIT_SUCCESS;
@@ -88,4 +101,11 @@ void draw_sprites(void *args)
         sprite_num++;
     }
 
+}
+
+void process_input(void *args)
+{
+    int* exit_flag = (int*) args;
+    getc(stdin);
+    *exit_flag = 1;    
 }

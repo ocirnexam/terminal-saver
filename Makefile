@@ -6,7 +6,7 @@ terminal-saver: build/main.o build/scene.o
 
 build/main.o: src/main.c
 	mkdir -p build
-	gcc -c src/main.c -o build/main.o
+	gcc	-c src/main.c -o build/main.o
 
 build/scene.o: src/scene/scene.c
 	gcc -c src/scene/scene.c -o build/scene.o
@@ -18,4 +18,4 @@ install: build/terminal-saver
 	mkdir -p /usr/share/terminal-saver
 	cp build/terminal-saver /bin/terminal-saver
 	cp src/sprites.dat /usr/share/terminal-saver/sprites.dat
-	
+
