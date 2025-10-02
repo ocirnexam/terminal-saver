@@ -12,7 +12,7 @@ This is a terminal screensaver application that displays animated sprites in the
 # Usage
 
 ```bash
-   terminal-saver [path_to_sprites_file]
+   terminal-saver
 ```
 
 If you want to provide your own sprite file, you can specify the path as an argument. Then you also need to provide the number of sprites and the maximum length of each sprite as additional arguments:
