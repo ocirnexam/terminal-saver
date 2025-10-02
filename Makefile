@@ -1,7 +1,7 @@
 terminal-saver: build/main.o build/scene.o
 	mkdir -p build
 	cp src/sprites.dat build/sprites.dat
-	gcc -o build/terminal-saver build/main.o build/scene.o
+	gcc -o build/terminal-saver build/main.o build/scene.o -lpthread
 	chmod +x build/terminal-saver
 
 build/main.o: src/main.c
